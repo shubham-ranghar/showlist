@@ -9,7 +9,7 @@ export default function SignOutButton() {
 
   async function handleSignOut() {
     await signOut(auth)
-    router.push('/')
+    window.location.href = '/'
   }
 
   return (
