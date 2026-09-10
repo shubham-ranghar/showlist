@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /ideas/{ideaId} {
+
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.voteCount == 0;
+
+      // Only allow updating voteCount, and only by exactly +1,
+      // and only if the corresponding vote document exists after this write.
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['voteCount'])
+        && request.resource.data.voteCount == resource.data.voteCount + 1
+        && existsAfter(/databases/$(database)/documents/ideas/$(ideaId)/votes/$(request.auth.uid));
+
+      allow delete: if request.auth != null
+        && resource.data.authorId == request.auth.uid;
+
+      match /votes/{voterId} {
+        allow read: if request.auth != null;
+
+        // Document ID must equal the voter's own UID.
+        allow create: if request.auth != null && request.auth.uid == voterId;
+
+        allow update, delete: if false;
+      }
+    }
+
+    match /waitlist/{entryId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
