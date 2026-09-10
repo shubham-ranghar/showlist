@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase/admin'
 
-console.log('Service account present:', !!process.env.FIREBASE_SERVICE_ACCOUNT)
-
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json()
