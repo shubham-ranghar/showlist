@@ -8,11 +8,6 @@ export default function Home() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
-  function scrollToWaitlist(e: React.MouseEvent) {
-    e.preventDefault()
-    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     
@@ -81,13 +76,6 @@ export default function Home() {
           <p className="text-lg md:text-xl text-[#d1d5db] max-w-2xl mx-auto mb-8">
             A powerful tool that helps you organize, prioritize, and execute your ideas faster than ever before. Join the waitlist to be first in line.
           </p>
-          <a
-            href="#waitlist"
-            onClick={scrollToWaitlist}
-            className="inline-block bg-[#9333ea] hover:bg-[#7e22ce] hover:shadow-lg hover:shadow-purple-900/20 text-white font-medium px-8 py-4 rounded-lg transition-all duration-200 text-lg"
-          >
-            Get Early Access
-          </a>
         </div>
 
         {/* Waitlist Form Section */}
