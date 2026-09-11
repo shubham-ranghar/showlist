@@ -21,8 +21,11 @@ setPersistence(auth, browserLocalPersistence).catch(console.error);
 export { auth };
 export const db = getFirestore(app);
 
-// TEMPORARY: Expose db and auth to window for testing Firestore security rules from browser console
+// TEMPORARY: Expose db, auth, and firestore functions to window for testing Firestore security rules from browser console
 if (typeof window !== 'undefined') {
-  (window as any).db = db;
-  (window as any).auth = auth;
+  import('firebase/firestore').then((firestoreModule) => {
+    (window as any).db = db;
+    (window as any).auth = auth;
+    (window as any).fs = firestoreModule;
+  });
 }
