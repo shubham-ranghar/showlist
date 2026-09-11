@@ -29,8 +29,7 @@ export default function SignUpPage() {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password)
-
-      router.push('/board')
+      router.replace('/board')
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code
 
@@ -44,117 +43,98 @@ export default function SignUpPage() {
         setError('Something went wrong. Please try again.')
       }
       console.error(err)
-    } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#121212] px-4">
+    <main className="page-shell flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* App Name */}
-        <div className="text-center mb-8">
-          <h1 className="text-white font-bold text-2xl">Shortlist</h1>
+        <div className="mb-8 text-center">
+          <Link href="/" className="brand-mark">
+            Shortlist
+          </Link>
         </div>
 
-        {/* Card */}
-        <div className="rounded-lg bg-[#1e1e1e] p-8 border border-white/10">
-          <h2 className="text-center text-2xl font-bold text-white mb-2">
-            Create an account
-          </h2>
-
-          <p className="text-center text-[#d1d5db] mb-8">
-            Start your journey with us today.
+        <div className="card-surface">
+          <h1 className="section-title text-center">Create an account</h1>
+          <p className="section-sub text-center">
+            Start collecting and prioritizing ideas.
           </p>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <p className="rounded-md bg-red-900/30 p-3 text-sm text-red-400 border border-red-900/50">
+              <p className="alert-error" role="alert">
                 {error}
               </p>
             )}
 
             <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-medium text-[#d1d5db]"
-              >
+              <label htmlFor="email" className="label">
                 Email
               </label>
-
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="you@company.com"
                 required
                 disabled={isLoading}
-                className="w-full rounded-md border border-white/10 bg-[#121212] px-4 py-3 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+                className="input-field"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-medium text-[#d1d5db]"
-              >
+              <label htmlFor="password" className="label">
                 Password
               </label>
-
               <input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password"
+                placeholder="At least 6 characters"
                 required
                 disabled={isLoading}
                 minLength={6}
-                className="w-full rounded-md border border-white/10 bg-[#121212] px-4 py-3 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+                className="input-field"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-[#d1d5db]"
-              >
-                Confirm Password
+              <label htmlFor="confirmPassword" className="label">
+                Confirm password
               </label>
-
               <input
                 id="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
+                placeholder="Repeat your password"
                 required
                 disabled={isLoading}
                 minLength={6}
-                className="w-full rounded-md border border-white/10 bg-[#121212] px-4 py-3 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+                className="input-field"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-md bg-[#9333ea] hover:bg-[#7e22ce] hover:shadow-lg hover:shadow-purple-900/20 px-4 py-3 font-medium text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none"
+              className="btn-primary w-full"
             >
-              {isLoading ? 'Creating account...' : 'Sign up'}
+              {isLoading ? 'Creating account…' : 'Sign up'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#d1d5db]">
+          <p className="mt-6 text-center text-sm text-ink-muted">
             Already have an account?{' '}
-            <Link
-              href="/login"
-              className="font-medium text-[#9333ea] hover:text-[#7e22ce] transition-colors"
-            >
-              Log in
+            <Link href="/login" className="link-accent">
+              Sign in
             </Link>
           </p>
         </div>

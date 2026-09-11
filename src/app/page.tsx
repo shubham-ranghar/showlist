@@ -1,131 +1,178 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+}
 
 export default function Home() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [fieldError, setFieldError] = useState('')
+  const submittingRef = useRef(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    
-    if (!email || !email.includes('@')) {
+
+    if (submittingRef.current || status === 'success') return
+
+    const trimmed = email.trim()
+    if (!trimmed || !isValidEmail(trimmed)) {
+      setFieldError('Enter a valid email address')
       setStatus('error')
-      setErrorMessage('Please enter a valid email address')
+      setErrorMessage('')
       return
     }
 
-    setStatus('loading')
+    submittingRef.current = true
+    setFieldError('')
     setErrorMessage('')
+
+    // Optimistic success — don't wait on Firestore round-trip.
+    setStatus('success')
+    const submittedEmail = trimmed
+    setEmail('')
 
     try {
       const response = await fetch('/api/waitlist', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: submittedEmail }),
       })
 
-      const data = await response.json()
+      const data = await response.json().catch(() => ({}))
 
-      if (!response.ok) {
-        if (data.error === 'duplicate') {
-          setStatus('error')
-          setErrorMessage('This email is already on the waitlist')
-        } else {
-          setStatus('error')
-          setErrorMessage('Something went wrong. Please try again.')
-        }
-      } else {
-        setStatus('success')
-        setEmail('')
+      // Duplicate still means they're on the list — keep success.
+      if (!response.ok && data.error !== 'duplicate') {
+        setStatus('error')
+        setEmail(submittedEmail)
+        setErrorMessage('Something went wrong. Please try again.')
       }
-    } catch (err) {
+    } catch {
       setStatus('error')
+      setEmail(submittedEmail)
       setErrorMessage('Something went wrong. Please try again.')
+    } finally {
+      submittingRef.current = false
     }
   }
 
   return (
-    <main className="min-h-screen bg-[#121212] px-4 py-6 md:py-8">
-      {/* Navbar */}
-      <nav className="max-w-6xl mx-auto flex items-center justify-between mb-6">
-        <div className="text-white font-bold text-xl">Shortlist</div>
-        <div className="flex items-center gap-6">
-          <Link href="/login" className="text-[#d1d5db] hover:text-white transition-colors">
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            className="bg-[#9333ea] hover:bg-[#7e22ce] hover:shadow-lg hover:shadow-purple-900/20 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200"
-          >
-            Sign up
-          </Link>
-        </div>
-      </nav>
+    <main className="page-shell flex flex-col">
+      <div className="relative isolate flex-1 overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(147,51,234,0.18)_0%,_transparent_55%),linear-gradient(180deg,#121212_0%,#16121c_100%)]"
+        />
 
-      <div className="max-w-3xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Build Something <span className="text-[#9333ea]">Amazing</span>
-          </h1>
-          <p className="text-lg md:text-xl text-[#d1d5db] max-w-2xl mx-auto mb-8">
-            A powerful tool that helps you organize, prioritize, and execute your ideas faster than ever before. Join the waitlist to be first in line.
+        <header className="container-wide">
+          <nav className="nav-bar" aria-label="Primary">
+            <Link href="/" className="brand-mark">
+              Shortlist
+            </Link>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link href="/login" className="btn-ghost">
+                Sign in
+              </Link>
+              <Link href="/signup" className="btn-primary">
+                Sign up
+              </Link>
+            </div>
+          </nav>
+        </header>
+
+        <section className="container-wide flex flex-col items-center pb-16 pt-10 text-center sm:pb-20 sm:pt-16">
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+            Shortlist
           </p>
-        </div>
+          <h1 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
+            Know what to build next
+          </h1>
+          <p className="mt-4 max-w-xl text-base text-ink-muted sm:text-lg">
+            Capture feature ideas, upvote what matters, and keep your product
+            roadmap focused on the highest-signal work.
+          </p>
 
-        {/* Waitlist Form Section */}
-        <div id="waitlist" className="max-w-md mx-auto">
-          <div className="bg-[#1e1e1e] rounded-lg p-8 border border-white/10">
-            <h2 className="text-2xl font-bold text-white mb-2 text-center">
-              Join the Waitlist
-            </h2>
-            <p className="text-[#d1d5db] text-center mb-6">
-              Be the first to know when we launch
-            </p>
+          <div id="waitlist" className="mt-10 w-full max-w-md text-left">
+            <div className="card-surface">
+              <h2 className="font-display text-lg font-semibold text-ink">
+                Join the waitlist
+              </h2>
+              <p className="mt-1 text-sm text-ink-muted">
+                Be first to know when we open access.
+              </p>
 
-            {status === 'success' ? (
-              <div className="text-center py-4">
-                <div className="text-green-500 text-4xl mb-2">✓</div>
-                <p className="text-white font-medium">
-                  You're on the list! We'll be in touch soon.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    disabled={status === 'loading'}
-                    className="w-full px-4 py-3 rounded-lg border border-white/10 bg-[#121212] outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
-                  />
+              {status === 'success' ? (
+                <div className="alert-success mt-6" role="status">
+                  You&apos;re on the list. We&apos;ll be in touch soon.
                 </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+                  <div>
+                    <label htmlFor="waitlist-email" className="label">
+                      Email
+                    </label>
+                    <input
+                      id="waitlist-email"
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        if (fieldError) setFieldError('')
+                        if (status === 'error') setStatus('idle')
+                      }}
+                      placeholder="you@company.com"
+                      aria-invalid={Boolean(fieldError)}
+                      aria-describedby={
+                        fieldError
+                          ? 'waitlist-email-error'
+                          : errorMessage
+                            ? 'waitlist-form-error'
+                            : undefined
+                      }
+                      className="input-field"
+                    />
+                    {fieldError && (
+                      <p
+                        id="waitlist-email-error"
+                        className="mt-1.5 text-sm text-danger"
+                        role="alert"
+                      >
+                        {fieldError}
+                      </p>
+                    )}
+                  </div>
 
-                {status === 'error' && (
-                  <p className="text-red-400 text-sm">
-                    {errorMessage}
-                  </p>
-                )}
+                  {errorMessage && (
+                    <p
+                      id="waitlist-form-error"
+                      className="alert-error"
+                      role="alert"
+                    >
+                      {errorMessage}
+                    </p>
+                  )}
 
-                <button
-                  type="submit"
-                  disabled={status === 'loading'}
-                  className="w-full bg-[#9333ea] hover:bg-[#7e22ce] hover:shadow-lg hover:shadow-purple-900/20 text-white font-medium px-4 py-3 rounded-lg transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none"
-                >
-                  {status === 'loading' ? 'Joining...' : 'Join Waitlist'}
-                </button>
-              </form>
-            )}
+                  <button type="submit" className="btn-primary w-full">
+                    Join waitlist
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
-        </div>
+        </section>
       </div>
+
+      <footer className="border-t border-white/10 bg-canvas-elevated/60">
+        <div className="container-wide flex flex-col gap-2 py-8 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-medium text-white">Shortlist</p>
+        </div>
+      </footer>
     </main>
   )
 }

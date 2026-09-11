@@ -1,6 +1,10 @@
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { getAuth } from "firebase-admin/auth";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { getAuth, type Auth } from "firebase-admin/auth";
+
+let adminApp: App | undefined;
+let cachedDb: Firestore | undefined;
+let cachedAuth: Auth | undefined;
 
 function getServiceAccount() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -12,15 +16,30 @@ function getServiceAccount() {
   return JSON.parse(raw);
 }
 
-let adminApp: App;
+/** Lazy singleton — initializes on first use, not at module import. */
+function getAdminApp(): App {
+  if (adminApp) return adminApp;
 
-if (!getApps().length) {
-  adminApp = initializeApp({
-    credential: cert(getServiceAccount()),
-  });
-} else {
-  adminApp = getApps()[0];
+  const existing = getApps();
+  adminApp = existing.length
+    ? existing[0]
+    : initializeApp({
+        credential: cert(getServiceAccount()),
+      });
+
+  return adminApp;
 }
 
-export const adminDb = getFirestore(adminApp);
-export const adminAuth = getAuth(adminApp);
+export function getAdminDb(): Firestore {
+  if (!cachedDb) {
+    cachedDb = getFirestore(getAdminApp());
+  }
+  return cachedDb;
+}
+
+export function getAdminAuth(): Auth {
+  if (!cachedAuth) {
+    cachedAuth = getAuth(getAdminApp());
+  }
+  return cachedAuth;
+}

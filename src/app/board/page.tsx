@@ -8,14 +8,16 @@ import { useAuth } from '@/components/AuthProvider'
 import IdeaForm from '@/components/IdeaForm'
 import IdeaCard from '@/components/IdeaCard'
 import SignOutButton from '@/components/SignOutButton'
+import type { Idea } from '@/lib/types'
 
-type Idea = {
-  id: string
-  title: string
-  body: string
-  authorId: string
-  authorEmail: string
-  voteCount: number
+function BoardSkeleton() {
+  return (
+    <div className="space-y-4" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="skeleton h-28 w-full" />
+      ))}
+    </div>
+  )
 }
 
 export default function BoardPage() {
@@ -27,68 +29,107 @@ export default function BoardPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login')
+      router.replace('/login')
     }
   }, [loading, user, router])
 
   useEffect(() => {
     if (!user) return
 
-    const ideasQuery = query(collection(db, 'ideas'), orderBy('createdAt', 'desc'))
+    // Single ordered query for the board — one listener for the list, not per card.
+    const ideasQuery = query(
+      collection(db, 'ideas'),
+      orderBy('createdAt', 'desc')
+    )
 
     const unsubscribe = onSnapshot(ideasQuery, (snapshot) => {
-      const list = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+      const serverIdeas = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
       })) as Idea[]
-      setIdeas(list)
+
+      setIdeas((prev) => {
+        const pending = prev.filter((idea) => {
+          if (!idea.optimistic) return false
+          return !serverIdeas.some(
+            (server) =>
+              server.authorId === idea.authorId &&
+              server.title === idea.title &&
+              server.body === idea.body
+          )
+        })
+        return [...pending, ...serverIdeas]
+      })
       setIdeasLoading(false)
     })
 
     return () => unsubscribe()
   }, [user])
 
-  if (loading || !user) {
+  function handleOptimisticAdd(idea: Idea) {
+    setIdeas((prev) => [idea, ...prev])
+  }
+
+  function handleRollback(tempId: string) {
+    setIdeas((prev) => prev.filter((idea) => idea.id !== tempId))
+  }
+
+  if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#121212]">
-        <p className="text-[#d1d5db]">Loading...</p>
+      <main className="page-shell">
+        <div className="container-board py-10">
+          <div className="skeleton mb-8 h-10 w-40" />
+          <div className="skeleton mb-6 h-40 w-full" />
+          <BoardSkeleton />
+        </div>
+      </main>
+    )
+  }
+
+  if (!user) {
+    return (
+      <main className="page-shell flex items-center justify-center">
+        <p className="text-sm text-ink-muted">Redirecting to sign in…</p>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#121212] px-4 py-10">
-      {/* Navbar */}
-      <nav className="max-w-4xl mx-auto flex items-center justify-between mb-8">
-        <div className="text-white font-bold text-xl">Shortlist</div>
-        <SignOutButton />
-      </nav>
+    <main className="page-shell">
+      <div className="container-board py-8 sm:py-10">
+        <nav className="nav-bar !py-0 mb-8" aria-label="Board">
+          <div className="brand-mark">Shortlist</div>
+          <SignOutButton />
+        </nav>
 
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Board</h1>
-          <p className="text-sm text-[#d1d5db]">Signed in as {user.email}</p>
-        </div>
+        <header className="mb-6">
+          <h1 className="section-title">Board</h1>
+          <p className="section-sub">Signed in as {user.email}</p>
+        </header>
 
-        <div className="mt-6">
-          <IdeaForm />
-        </div>
+        <IdeaForm
+          onOptimisticAdd={handleOptimisticAdd}
+          onRollback={handleRollback}
+        />
 
-        <div className="mt-8 space-y-4">
-          {ideasLoading && (
-            <p className="text-center text-sm text-[#d1d5db]">Loading ideas...</p>
-          )}
+        <section className="mt-8 space-y-4" aria-live="polite">
+          {ideasLoading && <BoardSkeleton />}
 
           {!ideasLoading && ideas.length === 0 && (
-            <p className="text-center text-sm text-[#d1d5db]">
-              No ideas yet. Be the first to post one.
-            </p>
+            <div className="card-surface text-center">
+              <p className="font-display text-base font-semibold text-ink">
+                No ideas yet
+              </p>
+              <p className="mt-1 text-sm text-ink-muted">
+                Be the first to post one and start the shortlist.
+              </p>
+            </div>
           )}
 
           {ideas.map((idea) => (
             <IdeaCard key={idea.id} idea={idea} />
           ))}
-        </div>
+        </section>
       </div>
     </main>
   )

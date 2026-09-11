@@ -22,8 +22,8 @@ export default function SignInPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
-
-      router.push('/board')
+      // Redirect as soon as auth resolves — no extra data fetches.
+      router.replace('/board')
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code
 
@@ -41,94 +41,78 @@ export default function SignInPage() {
         setError('Something went wrong. Please try again.')
       }
       console.error(err)
-    } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#121212] px-4">
+    <main className="page-shell flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* App Name */}
-        <div className="text-center mb-8">
-          <h1 className="text-white font-bold text-2xl">Shortlist</h1>
+        <div className="mb-8 text-center">
+          <Link href="/" className="brand-mark">
+            Shortlist
+          </Link>
         </div>
 
-        {/* Card */}
-        <div className="rounded-lg bg-[#1e1e1e] p-8 border border-white/10">
-          <h2 className="text-center text-2xl font-bold text-white mb-2">
-            Log in to your account
-          </h2>
-
-          <p className="text-center text-[#d1d5db] mb-8">
-            Welcome back! Please enter your details.
+        <div className="card-surface">
+          <h1 className="section-title text-center">Sign in</h1>
+          <p className="section-sub text-center">
+            Welcome back. Enter your details to continue.
           </p>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <p className="rounded-md bg-red-900/30 p-3 text-sm text-red-400 border border-red-900/50">
+              <p className="alert-error" role="alert">
                 {error}
               </p>
             )}
 
             <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-medium text-[#d1d5db]"
-              >
+              <label htmlFor="email" className="label">
                 Email
               </label>
-
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="you@company.com"
                 required
                 disabled={isLoading}
-                className="w-full rounded-md border border-white/10 bg-[#121212] px-4 py-3 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+                className="input-field"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-medium text-[#d1d5db]"
-              >
+              <label htmlFor="password" className="label">
                 Password
               </label>
-
               <input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Your password"
                 required
                 disabled={isLoading}
-                className="w-full rounded-md border border-white/10 bg-[#121212] px-4 py-3 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+                className="input-field"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-md bg-[#9333ea] hover:bg-[#7e22ce] hover:shadow-lg hover:shadow-purple-900/20 px-4 py-3 font-medium text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none"
+              className="btn-primary w-full"
             >
-              {isLoading ? 'Logging in...' : 'Log in'}
+              {isLoading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#d1d5db]">
+          <p className="mt-6 text-center text-sm text-ink-muted">
             Don&apos;t have an account?{' '}
-            <Link
-              href="/signup"
-              className="font-medium text-[#9333ea] hover:text-[#7e22ce] transition-colors"
-            >
+            <Link href="/signup" className="link-accent">
               Sign up
             </Link>
           </p>

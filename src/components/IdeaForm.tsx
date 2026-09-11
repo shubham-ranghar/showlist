@@ -4,8 +4,17 @@ import { useState } from 'react'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
 import { useAuth } from './AuthProvider'
+import type { Idea } from '@/lib/types'
 
-export default function IdeaForm() {
+type IdeaFormProps = {
+  onOptimisticAdd: (idea: Idea) => void
+  onRollback: (tempId: string) => void
+}
+
+export default function IdeaForm({
+  onOptimisticAdd,
+  onRollback,
+}: IdeaFormProps) {
   const { user } = useAuth()
 
   const [title, setTitle] = useState('')
@@ -22,27 +31,45 @@ export default function IdeaForm() {
       return
     }
 
-    if (!title.trim() || !body.trim()) {
+    const trimmedTitle = title.trim()
+    const trimmedBody = body.trim()
+
+    if (!trimmedTitle || !trimmedBody) {
       setError('Please fill in both the title and the description.')
       return
     }
 
+    const tempId = `temp-${crypto.randomUUID()}`
+    const optimisticIdea: Idea = {
+      id: tempId,
+      title: trimmedTitle,
+      body: trimmedBody,
+      authorId: user.uid,
+      authorEmail: user.email ?? '',
+      voteCount: 0,
+      optimistic: true,
+    }
+
     setIsSubmitting(true)
+    setTitle('')
+    setBody('')
+    onOptimisticAdd(optimisticIdea)
 
     try {
       await addDoc(collection(db, 'ideas'), {
-        title: title.trim(),
-        body: body.trim(),
+        title: trimmedTitle,
+        body: trimmedBody,
         authorId: user.uid,
         authorEmail: user.email,
         createdAt: serverTimestamp(),
         voteCount: 0,
       })
-
-      setTitle('')
-      setBody('')
+      // Keep optimistic row until onSnapshot merges in the server doc.
     } catch (err) {
       console.error(err)
+      onRollback(tempId)
+      setTitle(trimmedTitle)
+      setBody(trimmedBody)
       setError('Could not post your idea. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -50,20 +77,19 @@ export default function IdeaForm() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-lg border border-white/10 bg-[#1e1e1e] p-6 shadow-lg shadow-black/20"
-    >
-      <h2 className="text-lg font-semibold text-white">Post a new idea</h2>
+    <form onSubmit={handleSubmit} className="card-surface">
+      <h2 className="font-display text-lg font-semibold text-ink">
+        Post a new idea
+      </h2>
 
       {error && (
-        <p className="mt-3 rounded-md bg-red-900/30 p-3 text-sm text-red-400 border border-red-900/50">
+        <p className="alert-error mt-3" role="alert">
           {error}
         </p>
       )}
 
       <div className="mt-4">
-        <label htmlFor="title" className="mb-1 block text-sm font-medium text-[#d1d5db]">
+        <label htmlFor="title" className="label">
           Title
         </label>
         <input
@@ -74,12 +100,12 @@ export default function IdeaForm() {
           placeholder="Short, clear idea title"
           disabled={isSubmitting}
           maxLength={100}
-          className="w-full rounded-md border border-white/10 bg-[#121212] px-3 py-2 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+          className="input-field"
         />
       </div>
 
       <div className="mt-4">
-        <label htmlFor="body" className="mb-1 block text-sm font-medium text-[#d1d5db]">
+        <label htmlFor="body" className="label">
           Description
         </label>
         <textarea
@@ -90,16 +116,16 @@ export default function IdeaForm() {
           disabled={isSubmitting}
           maxLength={500}
           rows={3}
-          className="w-full rounded-md border border-white/10 bg-[#121212] px-3 py-2 outline-none focus:border-[#9333ea] focus:ring-2 focus:ring-[#9333ea]/20 text-white placeholder:text-[#d1d5db] disabled:opacity-50 transition-all"
+          className="input-field resize-y no-scrollbar"
         />
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-4 rounded-md bg-[#9333ea] hover:bg-[#7e22ce] hover:shadow-lg hover:shadow-purple-900/20 px-4 py-2 text-sm font-medium text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none"
+        className="btn-primary mt-4"
       >
-        {isSubmitting ? 'Posting...' : 'Post idea'}
+        {isSubmitting ? 'Posting…' : 'Post idea'}
       </button>
     </form>
   )

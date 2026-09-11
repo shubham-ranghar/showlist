@@ -1,11 +1,8 @@
-
-
-"use client"; 
+"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
-
 
 type AuthContextType = {
   user: User | null;
@@ -22,10 +19,16 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => auth.currentUser);
+  const [loading, setLoading] = useState(() => !auth.currentUser);
 
   useEffect(() => {
+    // Sync immediately if persistence already restored a session.
+    if (auth.currentUser) {
+      setUser(auth.currentUser);
+      setLoading(false);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
