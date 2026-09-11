@@ -14,6 +14,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState('')
   const [fieldError, setFieldError] = useState('')
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
   const submittingRef = useRef(false)
 
   useEffect(() => {
@@ -104,8 +105,8 @@ export default function Home() {
           </nav>
         </header>
 
-        <section className="container-wide flex flex-col items-center pb-20 pt-10 text-center sm:pt-16">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-accent">
+        <section className="container-wide flex flex-col items-center pb-12 pt-8 text-center sm:pt-12">
+          <p className="font-display text-base font-semibold uppercase tracking-[0.18em] text-accent">
             Shortlist
           </p>
           <h1 className="mt-4 max-w-2xl font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl md:text-6xl">
@@ -117,50 +118,19 @@ export default function Home() {
           </p>
         </section>
 
-        <section className="container-wide py-20">
-          <div className="mx-auto w-full max-w-5xl">
-            <div className="grid gap-6 sm:grid-cols-3">
-              <div className="card-surface !p-6">
-                <h3 className="font-display text-base font-semibold text-ink">
-                  Capture
-                </h3>
-                <p className="mt-2 text-sm text-ink-muted">
-                  Collect and organize feature ideas from your team and users in one place.
-                </p>
-              </div>
-              <div className="card-surface !p-6">
-                <h3 className="font-display text-base font-semibold text-ink">
-                  Upvote
-                </h3>
-                <p className="mt-2 text-sm text-ink-muted">
-                  Let your community vote on what matters most to them.
-                </p>
-              </div>
-              <div className="card-surface !p-6">
-                <h3 className="font-display text-base font-semibold text-ink">
-                  Prioritize
-                </h3>
-                <p className="mt-2 text-sm text-ink-muted">
-                  Focus your roadmap on the highest-signal work with clear data.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="container-wide py-20">
-          <div id="waitlist" className="mx-auto w-full max-w-md text-left">
-            <div className="card-surface">
+        <section className="container-wide py-12">
+          <div id="waitlist" className="mx-auto w-full max-w-lg text-left">
+            <div className="card-surface !p-8">
               <h2 className="font-display text-lg font-semibold text-ink">
                 Join the waitlist
               </h2>
               {waitlistCount !== null && (
-                <p className="mt-1 text-sm text-ink-muted">
+                <p className="mt-2 text-sm text-ink-muted">
                   Join {waitlistCount} {waitlistCount === 1 ? 'person' : 'people'} already on the waitlist.
                 </p>
               )}
               {!waitlistCount && (
-                <p className="mt-1 text-sm text-ink-muted">
+                <p className="mt-2 text-sm text-ink-muted">
                   Be first to know when we open access.
                 </p>
               )}
@@ -190,6 +160,14 @@ export default function Home() {
                         if (fieldError) setFieldError('')
                         if (status === 'error') setStatus('idle')
                       }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = '#9333ea'
+                        e.target.style.boxShadow = '0 0 0 2px #a855f7, 0 0 0 4px #121212'
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.25)'
+                        e.target.style.boxShadow = 'none'
+                      }}
                       placeholder="you@company.com"
                       aria-invalid={Boolean(fieldError)}
                       aria-describedby={
@@ -200,11 +178,16 @@ export default function Home() {
                             : undefined
                       }
                       className="input-field"
+                      style={{
+                        borderColor: 'rgba(255, 255, 255, 0.25)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        outline: 'none',
+                      }}
                     />
                     {fieldError && (
                       <p
                         id="waitlist-email-error"
-                        className="mt-1.5 text-sm text-danger"
+                        className="mt-2 text-sm text-danger"
                         role="alert"
                       >
                         {fieldError}
@@ -222,7 +205,7 @@ export default function Home() {
                     </p>
                   )}
 
-                  <button type="submit" className="btn-primary w-full">
+                  <button type="submit" className="btn-primary w-full py-3 text-base">
                     Join waitlist
                   </button>
                   <p className="mt-3 text-xs text-ink-faint text-center">
@@ -234,39 +217,80 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="container-wide py-20" aria-label="FAQ">
-          <div className="mx-auto w-full max-w-md">
+        <section className="container-wide py-12">
+          <div className="mx-auto w-full max-w-5xl">
+            <div className="grid gap-6 sm:grid-cols-3">
+              <div className="card-surface !p-8">
+                <h3 className="font-display text-base font-semibold text-ink">
+                  Capture
+                </h3>
+                <p className="mt-3 text-sm text-ink-muted">
+                  Collect and organize feature ideas from your team and users in one place.
+                </p>
+              </div>
+              <div className="card-surface !p-8">
+                <h3 className="font-display text-base font-semibold text-ink">
+                  Upvote
+                </h3>
+                <p className="mt-3 text-sm text-ink-muted">
+                  Let your community vote on what matters most to them.
+                </p>
+              </div>
+              <div className="card-surface !p-8">
+                <h3 className="font-display text-base font-semibold text-ink">
+                  Prioritize
+                </h3>
+                <p className="mt-3 text-sm text-ink-muted">
+                  Focus your roadmap on the highest-signal work with clear data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="container-wide py-8" aria-label="FAQ">
+          <div className="mx-auto w-full max-w-lg">
             <h2 className="font-display text-lg font-semibold text-ink text-center mb-6">
               Frequently asked questions
             </h2>
             <div className="space-y-4">
-              <details className="card-surface group">
-                <summary className="cursor-pointer list-none font-display text-sm font-semibold text-ink p-4 flex items-center justify-between">
-                  When will Shortlist launch?
-                  <span className="text-ink-muted group-open:rotate-180 transition-transform">▼</span>
-                </summary>
-                <p className="px-4 pb-4 text-sm text-ink-muted">
-                  We&apos;re working hard to launch soon. Join the waitlist to be notified when we open access.
-                </p>
-              </details>
-              <details className="card-surface group">
-                <summary className="cursor-pointer list-none font-display text-sm font-semibold text-ink p-4 flex items-center justify-between">
-                  Will it be free?
-                  <span className="text-ink-muted group-open:rotate-180 transition-transform">▼</span>
-                </summary>
-                <p className="px-4 pb-4 text-sm text-ink-muted">
-                  Yes, we plan to offer a free tier for individuals and small teams.
-                </p>
-              </details>
-              <details className="card-surface group">
-                <summary className="cursor-pointer list-none font-display text-sm font-semibold text-ink p-4 flex items-center justify-between">
-                  Do I need to install anything?
-                  <span className="text-ink-muted group-open:rotate-180 transition-transform">▼</span>
-                </summary>
-                <p className="px-4 pb-4 text-sm text-ink-muted">
-                  No, Shortlist is a web app. Just sign up and start using it from your browser.
-                </p>
-              </details>
+              {[{
+                question: 'When will Shortlist launch?',
+                answer: "We&apos;re working hard to launch soon. Join the waitlist to be notified when we open access."
+              }, {
+                question: 'Will it be free?',
+                answer: 'Yes, we plan to offer a free tier for individuals and small teams.'
+              }, {
+                question: 'Do I need to install anything?',
+                answer: 'No, Shortlist is a web app. Just sign up and start using it from your browser.'
+              }].map((faq, index) => (
+                <div key={index} className="card-surface">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    className="w-full cursor-pointer font-display text-sm font-semibold text-ink p-4 flex items-center justify-between text-left"
+                    aria-expanded={openFaq === index}
+                  >
+                    {faq.question}
+                    <span
+                      className={`text-ink-muted transition-transform duration-300 ${
+                        openFaq === index ? 'rotate-180' : ''
+                      }`}
+                    >
+                      ▼
+                    </span>
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      openFaq === index ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <p className="px-4 pb-4 text-sm text-ink-muted">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
