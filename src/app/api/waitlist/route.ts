@@ -12,11 +12,16 @@ function isAlreadyExists(error: unknown): boolean {
   )
 }
 
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^(?!.*\.\.)[a-zA-Z0-9][a-zA-Z0-9._%+-]*[a-zA-Z0-9]@[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]\.[a-zA-Z]{2,}$/
+  return emailRegex.test(email.trim())
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json()
 
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    if (!email || typeof email !== 'string' || !isValidEmail(email)) {
       return NextResponse.json({ error: 'invalid_email' }, { status: 400 })
     }
 
