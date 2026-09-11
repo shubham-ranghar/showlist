@@ -111,23 +111,23 @@ export default function IdeaCard({ idea }: { idea: Idea }) {
 
   return (
     <article
-      className={`card-surface !p-5 ${idea.optimistic ? 'opacity-80' : ''}`}
+      className={`card-surface !p-6 ${idea.optimistic ? 'opacity-80' : ''}`}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-5">
         <div className="min-w-0 flex-1">
           <h3 className="font-display text-base font-semibold text-ink">
             {idea.title}
           </h3>
-          <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">
             {idea.body}
           </p>
-          <p className="mt-3 text-xs text-ink-faint">
+          <p className="mt-4 text-xs text-ink-faint">
             Posted by {idea.authorEmail}
             {idea.optimistic ? ' · Saving…' : ''}
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-3">
           <button
             type="button"
             onClick={handleUpvote}
@@ -169,7 +169,7 @@ export default function IdeaCard({ idea }: { idea: Idea }) {
       </div>
 
       {error && (
-        <p className="alert-error mt-3 !py-2 text-xs" role="alert">
+        <p className="alert-error mt-4 !py-2 text-xs" role="alert">
           {error}
         </p>
       )}

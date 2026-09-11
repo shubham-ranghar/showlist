@@ -46,9 +46,13 @@ export default function SignInPage() {
   }
 
   return (
-    <main className="page-shell flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
+    <main className="page-shell flex items-center justify-center px-4 py-16 sm:py-20">
+      <div className="relative isolate flex w-full max-w-md flex-col">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_rgba(147,51,234,0.18)_0%,_transparent_55%),linear-gradient(180deg,#121212_0%,#16121c_100%)] rounded-2xl"
+        />
+        <div className="mb-10 text-center">
           <Link href="/" className="brand-mark">
             Shortlist
           </Link>

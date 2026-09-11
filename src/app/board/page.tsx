@@ -14,7 +14,16 @@ function BoardSkeleton() {
   return (
     <div className="space-y-4" aria-hidden>
       {[0, 1, 2].map((i) => (
-        <div key={i} className="skeleton h-28 w-full" />
+        <div key={i} className="card-surface !p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="skeleton h-5 w-3/4" />
+              <div className="skeleton h-4 w-full" />
+              <div className="skeleton h-4 w-2/3" />
+            </div>
+            <div className="skeleton h-12 w-12 rounded-lg" />
+          </div>
+        </div>
       ))}
     </div>
   )
@@ -77,9 +86,9 @@ export default function BoardPage() {
   if (loading) {
     return (
       <main className="page-shell">
-        <div className="container-board py-10">
-          <div className="skeleton mb-8 h-10 w-40" />
-          <div className="skeleton mb-6 h-40 w-full" />
+        <div className="container-board py-10 sm:py-12">
+          <div className="skeleton mb-10 h-10 w-40" />
+          <div className="skeleton mb-8 h-40 w-full" />
           <BoardSkeleton />
         </div>
       </main>
@@ -96,13 +105,13 @@ export default function BoardPage() {
 
   return (
     <main className="page-shell">
-      <div className="container-board py-8 sm:py-10">
-        <nav className="nav-bar !py-0 mb-8" aria-label="Board">
+      <div className="container-board py-6 sm:py-8">
+        <nav className="nav-bar !py-0 mb-6" aria-label="Board">
           <div className="brand-mark">Shortlist</div>
           <SignOutButton />
         </nav>
 
-        <header className="mb-6">
+        <header className="mb-4">
           <h1 className="section-title">Board</h1>
           <p className="section-sub">Signed in as {user.email}</p>
         </header>
@@ -112,11 +121,14 @@ export default function BoardPage() {
           onRollback={handleRollback}
         />
 
-        <section className="mt-8 space-y-4" aria-live="polite">
+        <section className="mt-10 space-y-4" aria-live="polite">
           {ideasLoading && <BoardSkeleton />}
 
           {!ideasLoading && ideas.length === 0 && (
-            <div className="card-surface text-center">
+            <div className="card-surface !py-8 text-center">
+              <div className="mb-3 text-3xl" aria-hidden="true">
+                💡
+              </div>
               <p className="font-display text-base font-semibold text-ink">
                 No ideas yet
               </p>

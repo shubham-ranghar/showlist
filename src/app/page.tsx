@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 function isValidEmail(value: string) {
@@ -13,7 +13,25 @@ export default function Home() {
   const [status, setStatus] = useState<'idle' | 'success' | 'duplicate' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [fieldError, setFieldError] = useState('')
+  const [waitlistCount, setWaitlistCount] = useState<number | null>(null)
   const submittingRef = useRef(false)
+
+  useEffect(() => {
+    async function fetchWaitlistCount() {
+      try {
+        const response = await fetch('/api/waitlist/count')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.count > 0) {
+            setWaitlistCount(data.count)
+          }
+        }
+      } catch {
+        // Silently fail - count is optional
+      }
+    }
+    fetchWaitlistCount()
+  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -86,7 +104,7 @@ export default function Home() {
           </nav>
         </header>
 
-        <section className="container-wide flex flex-col items-center pb-16 pt-10 text-center sm:pb-20 sm:pt-16">
+        <section className="container-wide flex flex-col items-center pb-20 pt-10 text-center sm:pt-16">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-accent">
             Shortlist
           </p>
@@ -97,15 +115,55 @@ export default function Home() {
             Capture feature ideas, upvote what matters, and keep your product
             roadmap focused on the highest-signal work.
           </p>
+        </section>
 
-          <div id="waitlist" className="mt-10 w-full max-w-md text-left">
+        <section className="container-wide py-20">
+          <div className="mx-auto w-full max-w-5xl">
+            <div className="grid gap-6 sm:grid-cols-3">
+              <div className="card-surface !p-6">
+                <h3 className="font-display text-base font-semibold text-ink">
+                  Capture
+                </h3>
+                <p className="mt-2 text-sm text-ink-muted">
+                  Collect and organize feature ideas from your team and users in one place.
+                </p>
+              </div>
+              <div className="card-surface !p-6">
+                <h3 className="font-display text-base font-semibold text-ink">
+                  Upvote
+                </h3>
+                <p className="mt-2 text-sm text-ink-muted">
+                  Let your community vote on what matters most to them.
+                </p>
+              </div>
+              <div className="card-surface !p-6">
+                <h3 className="font-display text-base font-semibold text-ink">
+                  Prioritize
+                </h3>
+                <p className="mt-2 text-sm text-ink-muted">
+                  Focus your roadmap on the highest-signal work with clear data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="container-wide py-20">
+          <div id="waitlist" className="mx-auto w-full max-w-md text-left">
             <div className="card-surface">
               <h2 className="font-display text-lg font-semibold text-ink">
                 Join the waitlist
               </h2>
-              <p className="mt-1 text-sm text-ink-muted">
-                Be first to know when we open access.
-              </p>
+              {waitlistCount !== null && (
+                <p className="mt-1 text-sm text-ink-muted">
+                  Join {waitlistCount} {waitlistCount === 1 ? 'person' : 'people'} already on the waitlist.
+                </p>
+              )}
+              {!waitlistCount && (
+                <p className="mt-1 text-sm text-ink-muted">
+                  Be first to know when we open access.
+                </p>
+              )}
 
               {status === 'success' ? (
                 <div className="alert-success mt-6" role="status">
@@ -167,12 +225,58 @@ export default function Home() {
                   <button type="submit" className="btn-primary w-full">
                     Join waitlist
                   </button>
+                  <p className="mt-3 text-xs text-ink-faint text-center">
+                    No spam. We&apos;ll only email you when we open access.
+                  </p>
                 </form>
               )}
             </div>
           </div>
         </section>
+
+        <section className="container-wide py-20" aria-label="FAQ">
+          <div className="mx-auto w-full max-w-md">
+            <h2 className="font-display text-lg font-semibold text-ink text-center mb-6">
+              Frequently asked questions
+            </h2>
+            <div className="space-y-4">
+              <details className="card-surface group">
+                <summary className="cursor-pointer list-none font-display text-sm font-semibold text-ink p-4 flex items-center justify-between">
+                  When will Shortlist launch?
+                  <span className="text-ink-muted group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <p className="px-4 pb-4 text-sm text-ink-muted">
+                  We&apos;re working hard to launch soon. Join the waitlist to be notified when we open access.
+                </p>
+              </details>
+              <details className="card-surface group">
+                <summary className="cursor-pointer list-none font-display text-sm font-semibold text-ink p-4 flex items-center justify-between">
+                  Will it be free?
+                  <span className="text-ink-muted group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <p className="px-4 pb-4 text-sm text-ink-muted">
+                  Yes, we plan to offer a free tier for individuals and small teams.
+                </p>
+              </details>
+              <details className="card-surface group">
+                <summary className="cursor-pointer list-none font-display text-sm font-semibold text-ink p-4 flex items-center justify-between">
+                  Do I need to install anything?
+                  <span className="text-ink-muted group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <p className="px-4 pb-4 text-sm text-ink-muted">
+                  No, Shortlist is a web app. Just sign up and start using it from your browser.
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
       </div>
+
+      <footer className="container-wide border-t border-white/10 py-8">
+        <p className="text-sm text-ink-faint text-center">
+          © {new Date().getFullYear()} Shortlist. All rights reserved.
+        </p>
+      </footer>
     </main>
   )
 }
