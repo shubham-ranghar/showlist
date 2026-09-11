@@ -1,10 +1,9 @@
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
-import { getAuth, type Auth } from "firebase-admin/auth";
 
 let adminApp: App | undefined;
 let cachedDb: Firestore | undefined;
-let cachedAuth: Auth | undefined;
+let cachedAuth: any;
 
 function getServiceAccount() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -37,8 +36,9 @@ export function getAdminDb(): Firestore {
   return cachedDb;
 }
 
-export function getAdminAuth(): Auth {
+export async function getAdminAuth() {
   if (!cachedAuth) {
+    const { getAuth } = await import('firebase-admin/auth');
     cachedAuth = getAuth(getAdminApp());
   }
   return cachedAuth;
