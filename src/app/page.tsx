@@ -9,7 +9,7 @@ function isValidEmail(value: string) {
 
 export default function Home() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'success' | 'duplicate' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [fieldError, setFieldError] = useState('')
   const submittingRef = useRef(false)
@@ -17,7 +17,7 @@ export default function Home() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    if (submittingRef.current || status === 'success') return
+    if (submittingRef.current || status === 'success' || status === 'duplicate') return
 
     const trimmed = email.trim()
     if (!trimmed || !isValidEmail(trimmed)) {
@@ -31,8 +31,6 @@ export default function Home() {
     setFieldError('')
     setErrorMessage('')
 
-    // Optimistic success — don't wait on Firestore round-trip.
-    setStatus('success')
     const submittedEmail = trimmed
     setEmail('')
 
@@ -45,8 +43,11 @@ export default function Home() {
 
       const data = await response.json().catch(() => ({}))
 
-      // Duplicate still means they're on the list — keep success.
-      if (!response.ok && data.error !== 'duplicate') {
+      if (response.ok) {
+        setStatus('success')
+      } else if (data.error === 'duplicate') {
+        setStatus('duplicate')
+      } else {
         setStatus('error')
         setEmail(submittedEmail)
         setErrorMessage('Something went wrong. Please try again.')
@@ -108,6 +109,10 @@ export default function Home() {
               {status === 'success' ? (
                 <div className="alert-success mt-6" role="status">
                   You&apos;re on the list. We&apos;ll be in touch soon.
+                </div>
+              ) : status === 'duplicate' ? (
+                <div className="alert-success mt-6" role="status">
+                  You&apos;re already on the list — we&apos;ll be in touch.
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
