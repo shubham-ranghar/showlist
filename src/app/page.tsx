@@ -167,12 +167,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-
-      <footer className="border-t border-white/10 bg-canvas-elevated/60">
-        <div className="container-wide flex flex-col gap-2 py-8 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-medium text-white">Shortlist</p>
-        </div>
-      </footer>
     </main>
   )
 }
