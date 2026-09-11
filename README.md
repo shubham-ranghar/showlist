@@ -2,6 +2,10 @@ Shortlist
 
 A Next.js app with Firebase Auth and Firestore for managing feature ideas with a public waitlist and a signed-in board for posting and upvoting ideas.
 
+## Live Demo
+
+[https://showlist-lake.vercel.app](https://showlist-lake.vercel.app)
+
 ## Tech Stack
 
 - Next.js (App Router)
@@ -25,6 +29,7 @@ A Next.js app with Firebase Auth and Firestore for managing feature ideas with a
    - Create a Firestore database
    - Go to Project Settings > Service Accounts > Generate New Private Key
    - Download the JSON file (you'll need this for the admin SDK)
+   - Go to Authentication > Settings > Authorized domains and add your production Vercel domain (e.g., `your-app.vercel.app`) — this is required for auth to work in production
 
 3. Create a `.env.local` file in the project root with the following environment variables:
 
@@ -42,10 +47,10 @@ A Next.js app with Firebase Auth and Firestore for managing feature ideas with a
    - For `FIREBASE_SERVICE_ACCOUNT`, copy the entire JSON content from the downloaded service account key file and paste it as a single line (no line breaks, with `\n` properly escaped in the `private_key` field)
 
 4. Deploy Firestore security rules:
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-   (Requires Firebase CLI: `npm install -g firebase-tools` and `firebase login`)
+   - Go to Firebase Console > Firestore > Rules tab
+   - Copy the contents of `firestore.rules` from this repository
+   - Paste the rules into the Firestore Rules editor
+   - Click "Publish" to apply the rules
 
 5. Start the development server:
    ```bash
@@ -57,3 +62,8 @@ A Next.js app with Firebase Auth and Firestore for managing feature ideas with a
 ## Deployment
 
 This project can be deployed to Vercel. Make sure to add the environment variables in your Vercel project settings before deploying.
+
+## Notes
+
+- No part of the app is restricted to a specific account — any user can sign up and use all features.
+- Firestore security rules (in `firestore.rules`) enforce one-vote-per-user, ownership-based delete, and server-only waitlist access.
